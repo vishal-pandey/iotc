@@ -25,30 +25,35 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 
 public class Iotc {
-    static String username = "";
     static String password = "";
+    static String username = "";
     static String appname = "";
-    static String[] devices = new String[1000];
+    static ArrayList<String> devices = new ArrayList<String>();
     static String userkey = "";
 
     static MqttAndroidClient iotclient;
 
-    public interface OnConnect{
+    public interface Options{
+        void onConnect(String appName, String[] devices);
         void onMessageReceive(String deviceId, String msg);
     }
 
-    public static void connect(final Context c, final String key, final String[] devices, final OnConnect... mcb){
+
+
+    public static void iotcConnect(final Context c, final String key, final Options... mcb){
         String url = "https://iot.softwaremakeinindia.com/iot/";
         userkey = key;
 
@@ -66,14 +71,18 @@ public class Iotc {
                             password = jsonobject.getString("password");
                             appname = jsonobject.getString("name");
 
-                            if (mcb.length>0)
-                                mqttConnect(c, key, devices, mcb[0]);
-                            else
-                                mqttConnect(c, key, devices,null);
+                            JSONArray raw_devices = jsonobject.getJSONArray("devices");
 
-                            Log.d(TAG, "onResponse: vishaluser "+username);
-                            Log.d(TAG, "onResponse: vishaluser "+password);
-                            Log.d(TAG, "onResponse: vishaluser "+appname);
+                            for (int i =0; i<raw_devices.length(); i++){
+
+                                JSONObject temp = new JSONObject(raw_devices.get(i).toString());
+                                devices.add(temp.getString("name"));
+                            }
+
+                            if (mcb.length>0)
+                                mqttConnect(c, key, mcb[0]);
+                            else
+                                mqttConnect(c, key,null);
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -100,7 +109,7 @@ public class Iotc {
 
     }
 
-    public static void mqttConnect(final Context c, String key, final String[] devices, final OnConnect mcb){
+    public static void mqttConnect(final Context c, String key, final Options mcb){
 
 
         String clientId = MqttClient.generateClientId();
@@ -126,12 +135,12 @@ public class Iotc {
             public void deliveryComplete(IMqttDeliveryToken token) {
 
             }
+
+
         });
 
         try {
             MqttConnectOptions options = new MqttConnectOptions();
-            Log.d(TAG, "connect: cred "+username);
-            Log.d(TAG, "connect: cred "+password);
             options.setUserName(username);
             options.setPassword(password.toCharArray());
 
@@ -142,9 +151,12 @@ public class Iotc {
                     // We are connected
                     Log.d(TAG, "onSuccess is here");
 
-                    for (int i = 0; i < devices.length ; i++) {
-                        subscribe(devices[i]);
+                    String[] tempDevices = new String[devices.size()];
+                    for (int i=0; i<tempDevices.length; i++){
+                        tempDevices[i] = devices.get(i);
                     }
+                    mcb.onConnect(appname, tempDevices);
+
                 }
 
                 @Override
@@ -211,4 +223,5 @@ public class Iotc {
             e.printStackTrace();
         }
     }
+
 }
