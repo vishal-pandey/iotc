@@ -53,7 +53,7 @@ public class Iotc {
 
 
 
-    public static void iotcConnect(final Context c, final String key, final Options... mcb){
+    public static void connect(final Context c, final String key, final Options... mcb){
         String url = "https://iot.softwaremakeinindia.com/iot/";
         userkey = key;
 
