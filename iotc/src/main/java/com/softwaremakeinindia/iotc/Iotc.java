@@ -49,6 +49,7 @@ public class Iotc {
     public interface Options{
         void onConnect(String appName, String[] devices);
         void onMessageReceive(String deviceId, String msg);
+        void onAppKeyError();
     }
 
 
@@ -85,6 +86,7 @@ public class Iotc {
                                 mqttConnect(c, key,null);
 
                         } catch (JSONException e) {
+                            mcb[0].onAppKeyError();
                             e.printStackTrace();
                         }
 
@@ -94,6 +96,7 @@ public class Iotc {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("error", "onErrorResponse: error "+error.toString());
+                        mcb[0].onAppKeyError();
                     }
                 }
         ) {
@@ -222,6 +225,16 @@ public class Iotc {
         } catch (MqttException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void disConnect(){
+        try {
+            iotclient.disconnect();
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+        iotclient.unregisterResources();
+        iotclient.close();
     }
 
 }
