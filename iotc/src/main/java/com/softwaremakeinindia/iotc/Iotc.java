@@ -228,11 +228,7 @@ public class Iotc {
     }
 
     public static void disConnect(){
-        try {
-            iotclient.disconnect();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        System.out.println("From Lib");
         iotclient.unregisterResources();
         iotclient.close();
     }
