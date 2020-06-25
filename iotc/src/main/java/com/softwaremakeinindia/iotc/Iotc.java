@@ -229,7 +229,7 @@ public class Iotc {
 
     public static void disConnect(){
         System.out.println("From Lib");
-        iotclient.unregisterResources();
+//        iotclient.unregisterResources();
         iotclient.close();
     }
 
