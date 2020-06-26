@@ -73,9 +73,8 @@ public class Iotc {
                             appname = jsonobject.getString("name");
 
                             JSONArray raw_devices = jsonobject.getJSONArray("devices");
-
+                            devices.clear();
                             for (int i =0; i<raw_devices.length(); i++){
-
                                 JSONObject temp = new JSONObject(raw_devices.get(i).toString());
                                 devices.add(temp.getString("name"));
                             }
@@ -229,7 +228,7 @@ public class Iotc {
 
     public static void disConnect(){
         System.out.println("From Lib");
-        iotclient.unregisterResources();
+//        iotclient.unregisterResources();
         iotclient.close();
     }
 
